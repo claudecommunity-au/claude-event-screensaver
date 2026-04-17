@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,25 +37,26 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Claudience palette: stone-900 bg, warm off-white fg, terracotta accent. */
+    --background: 20 10% 10%;              /* #1c1917 */
+    --foreground: 45 36% 97%;              /* #faf9f6 */
+    --card: 12 7% 15%;                     /* #292524 */
+    --card-foreground: 45 36% 97%;
+    --popover: 12 7% 15%;
+    --popover-foreground: 45 36% 97%;
+    --primary: 14 54% 62%;                 /* #d4836a terracotta */
+    --primary-foreground: 20 10% 10%;
+    --secondary: 12 7% 20%;
+    --secondary-foreground: 45 36% 97%;
+    --muted: 12 7% 18%;
+    --muted-foreground: 24 6% 64%;         /* #a8a29e */
+    --accent: 14 54% 62%;
+    --accent-foreground: 20 10% 10%;
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 45 36% 97%;
+    --border: 12 7% 22%;
+    --input: 12 7% 22%;
+    --ring: 14 54% 62%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

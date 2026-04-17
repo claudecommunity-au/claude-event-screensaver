@@ -12,7 +12,7 @@ function Landing() {
   const nav = useNavigate()
   const [id, setId] = useState('')
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+    <div className="dark min-h-screen flex items-center justify-center bg-background text-foreground p-6 font-serif">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold">Claude Screensaver</h1>

@@ -32,7 +32,7 @@ function CopyPage() {
     : defaultConfigInput()
 
   return (
-    <div className="dark min-h-screen bg-[#2a2e33] text-foreground">
+    <div className="dark min-h-screen bg-background text-foreground font-serif">
       <ConfigForm
         defaultValues={base}
         passwordMode={{ mode: 'create' }}

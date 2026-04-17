@@ -13,7 +13,7 @@ function NewPage() {
   const nav = useNavigate()
   const [busy, setBusy] = useState(false)
   return (
-    <div className="dark min-h-screen bg-[#2a2e33] text-foreground">
+    <div className="dark min-h-screen bg-background text-foreground font-serif">
       <ConfigForm
         defaultValues={defaultConfigInput()}
         passwordMode={{ mode: 'create' }}

@@ -24,7 +24,7 @@ function EditPage() {
 
   if (!config) {
     return (
-      <div className="dark min-h-screen flex items-center justify-center bg-[#2a2e33] text-foreground p-6">
+      <div className="dark min-h-screen flex items-center justify-center bg-background text-foreground font-serif p-6">
         <p>Not found.</p>
       </div>
     )
@@ -32,7 +32,7 @@ function EditPage() {
 
   if (!password) {
     return (
-      <div className="dark min-h-screen flex items-center justify-center bg-[#2a2e33] text-foreground">
+      <div className="dark min-h-screen flex items-center justify-center bg-background text-foreground font-serif">
         <PasswordGate
           busy={gateBusy}
           error={gateError}
@@ -55,7 +55,7 @@ function EditPage() {
   }
 
   return (
-    <div className="dark min-h-screen bg-[#2a2e33] text-foreground">
+    <div className="dark min-h-screen bg-background text-foreground font-serif">
       <ConfigForm
         defaultValues={config}
         passwordMode={{ mode: 'edit-optional' }}
