@@ -284,13 +284,14 @@ export function Screensaver({ config }: { config: PublicConfig }) {
       }
       if (now > nextEggTime) {
         const activeCrabs = eggs.filter((e) => e instanceof CrabScuttle && !e.done).length
-        if (Math.random() < 0.8 && activeCrabs < maxCrabs) {
+        if (activeCrabs < maxCrabs) {
           eggs.push(new CrabScuttle(cols, rows))
+          nextEggTime = now + randRange(2000, 5000)
         } else {
           const n = 1 + Math.floor(Math.random() * 3)
           for (let i = 0; i < n; i++) eggs.push(new FloatingParticle(cols, rows, WARM))
+          nextEggTime = now + randRange(8000, 18000)
         }
-        nextEggTime = now + randRange(8000, 18000)
       }
       if (now > nextPeekTime) {
         const hasPeek = eggs.some((e) => e instanceof CrabPeek && !e.done)
