@@ -1,5 +1,5 @@
 // PBKDF2-SHA256, 150k iters, 16-byte salt, 32-byte derived key. Web Crypto only.
-const ITERATIONS = 150_000
+const ITERATIONS = 100_000
 const SALT_LEN = 16
 const KEY_LEN = 32
 
