@@ -20,7 +20,6 @@ import {
   BIG_CRAB_OPEN,
   BIG_CRAB_BLINK,
   BIG_CRAB_H,
-  MAX_CRABS,
 } from './crab'
 
 type Egg = CrabScuttle | CrabPeek | FloatingParticle
@@ -94,8 +93,9 @@ export function Screensaver({ config }: { config: PublicConfig }) {
     ro.observe(canvas)
     resize()
 
-    // Spawn one crab immediately
-    eggs.push(new CrabScuttle(cols, rows))
+    const maxCrabs = config.max_crabs ?? 5
+    // Spawn one crab immediately (if any allowed)
+    if (maxCrabs > 0) eggs.push(new CrabScuttle(cols, rows))
 
     const drawChar = (y: number, x: number, ch: string, color: string, bold = false) => {
       if (y < 0 || y >= rows || x < 0 || x >= cols || ch === ' ') return
@@ -284,7 +284,7 @@ export function Screensaver({ config }: { config: PublicConfig }) {
       }
       if (now > nextEggTime) {
         const activeCrabs = eggs.filter((e) => e instanceof CrabScuttle && !e.done).length
-        if (Math.random() < 0.8 && activeCrabs < MAX_CRABS) {
+        if (Math.random() < 0.8 && activeCrabs < maxCrabs) {
           eggs.push(new CrabScuttle(cols, rows))
         } else {
           const n = 1 + Math.floor(Math.random() * 3)

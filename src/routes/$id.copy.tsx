@@ -28,6 +28,7 @@ function CopyPage() {
         verbs: config.verbs,
         go_home_messages: config.go_home_messages,
         urgency_start_minutes_before_end: config.urgency_start_minutes_before_end,
+        max_crabs: config.max_crabs,
       }
     : defaultConfigInput()
 

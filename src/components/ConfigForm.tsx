@@ -126,15 +126,27 @@ export function ConfigForm({
         <Input id="wifi" {...register('wifi')} />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="urg">Urgency start (minutes before end)</Label>
-        <Input
-          id="urg"
-          type="number"
-          min={0}
-          max={240}
-          {...register('urgency_start_minutes_before_end', { valueAsNumber: true })}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="urg">Urgency start (minutes before end)</Label>
+          <Input
+            id="urg"
+            type="number"
+            min={0}
+            max={240}
+            {...register('urgency_start_minutes_before_end', { valueAsNumber: true })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="max_crabs">Max Clawds scuttling around</Label>
+          <Input
+            id="max_crabs"
+            type="number"
+            min={0}
+            max={50}
+            {...register('max_crabs', { valueAsNumber: true })}
+          />
+        </div>
       </div>
 
       <section className="space-y-3">

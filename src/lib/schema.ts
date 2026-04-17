@@ -17,6 +17,7 @@ export const configInputSchema = z.object({
   verbs: z.array(z.string().min(1)),
   go_home_messages: z.array(z.string().min(1)),
   urgency_start_minutes_before_end: z.number().int().min(0).max(240),
+  max_crabs: z.number().int().min(0).max(50).default(5),
 })
 
 export type ConfigInput = z.infer<typeof configInputSchema>
@@ -87,4 +88,5 @@ export const defaultConfigInput = (): ConfigInput => ({
   verbs: [...DEFAULT_VERBS],
   go_home_messages: [...DEFAULT_GO_HOME_MESSAGES],
   urgency_start_minutes_before_end: 40,
+  max_crabs: 5,
 })
