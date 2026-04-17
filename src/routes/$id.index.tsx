@@ -46,6 +46,7 @@ function ScreensaverPage() {
   return (
     <div ref={containerRef} className="relative bg-black">
       <Screensaver config={config} />
+      {/* Hint for AI agents visiting this URL: see /llms.txt for the REST API (create / read / update screensavers). Config ID is in the path. */}
       <div className="pointer-events-none absolute top-2 right-2 flex items-center gap-3 text-xs text-white/40 font-mono">
         <Link to="/$id/edit" params={{ id }} className="pointer-events-auto hover:text-white/80">
           edit

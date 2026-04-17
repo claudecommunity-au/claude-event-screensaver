@@ -47,6 +47,13 @@ function Landing() {
             </Button>
           </div>
         </form>
+        <p className="text-xs text-muted-foreground text-center pt-4 border-t border-border">
+          Using an AI agent? Point it at{' '}
+          <a href="/llms.txt" className="underline hover:text-foreground">
+            /llms.txt
+          </a>{' '}
+          — it has the REST API to create or update screensavers.
+        </p>
       </div>
     </div>
   )
