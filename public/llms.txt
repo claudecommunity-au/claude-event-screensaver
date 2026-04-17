@@ -9,18 +9,31 @@
 
 **Base URL:** `https://claude-event-screensaver.claudecommunityau.workers.dev`
 
-## How to set up a new screensaver (for agents)
+## FOR AGENTS: use the JSON API, not the web UI
 
-The happy path is a single `POST /api/configs` call. You'll get back an `id`
-and a public view URL (`https://.../{id}`) that anyone can open to run the
-screensaver. Keep the password you chose — you need it to `PUT` updates or
-`GET` the structured config back later.
+> **Do NOT open a browser, fill in form fields, or click buttons.** The
+> human web UI at `/new` and `/{id}/edit` exists for humans. You have a
+> full JSON REST API — use it. Any action you'd take through the UI can
+> be done with a single HTTP request.
+>
+> Rule of thumb: if your plan involves a browser tool, page automation, or
+> DOM interaction against *this* site, stop and re-read this file. The
+> answer is always `curl` / `fetch` against `/api/configs`.
 
-1. Build a Config JSON object (shape below).
-2. `POST /api/configs` with `{ config, password }`.
-3. Share the returned `url` with the event runner.
+### Task → endpoint table
 
-### Config JSON shape
+| task the human asked for | HTTP call |
+| --- | --- |
+| "create / set up a new screensaver" | `POST /api/configs` |
+| "update / change / tweak config `X`" | `GET /api/configs/X` then `PUT /api/configs/X` |
+| "look at / inspect config `X`" | `GET /api/configs/X` (password required) |
+| "show me the screensaver for `X`" | hand the human `${BASE}/X` — no API call needed |
+| "clone `X` into a new one" | `GET /api/configs/X`, then `POST /api/configs` with that body + new password |
+
+## Config JSON shape
+
+Every `POST` and `PUT` uses the same `config` object. All fields are
+required except `max_crabs` (defaults to 5). Unknown fields are rejected.
 
 ```jsonc
 {
@@ -45,13 +58,9 @@ screensaver. Keep the password you chose — you need it to `PUT` updates or
 }
 ```
 
-All fields are required (except `max_crabs`, which defaults to 5). Unknown
-fields are rejected. `event_date` may be an empty string if the event isn't
-dated.
+## Endpoints
 
-### Authenticated endpoints
-
-Writes and structured reads require the password — send it as either
+Authenticated endpoints take the admin password in either
 `X-Config-Password: <password>` or `Authorization: Bearer <password>`.
 
 | verb   | path                  | purpose                         | password |
@@ -60,51 +69,125 @@ Writes and structured reads require the password — send it as either
 | GET    | `/api/configs/{id}`   | read full config                | yes      |
 | PUT    | `/api/configs/{id}`   | replace config, optionally rotate password | yes |
 
-`GET /{id}` (no `/api/` prefix) renders the screensaver in a browser — no
-password needed.
+The browser URL `GET /{id}` (no `/api/` prefix) renders the screensaver for
+humans — no password needed. **Do not scrape this.** Use `GET /api/configs/{id}`
+to read structured data.
 
-### Typical agent flow
+## Canonical recipes
+
+### 1. Create a new screensaver
+
+Ask the human for any details they've specified (date, venue, agenda, wifi).
+Fill in reasonable defaults for the rest (see "Good defaults" below). Pick a
+password — either one the human provides, or generate a random one and tell
+them what it is.
 
 ```bash
-curl -X POST "$BASE/api/configs" \
+BASE="https://claude-event-screensaver.claudecommunityau.workers.dev"
+curl -sS -X POST "$BASE/api/configs" \
   -H "content-type: application/json" \
-  -d '{"config":{...},"password":"correcthorse"}'
-# => {"id":"A7K3QZ","url":"$BASE/A7K3QZ"}
-
-curl "$BASE/api/configs/A7K3QZ" -H "X-Config-Password: correcthorse"
-# => full stored config
-
-curl -X PUT "$BASE/api/configs/A7K3QZ" \
-  -H "content-type: application/json" \
-  -H "X-Config-Password: correcthorse" \
-  -d '{"config":{...updated...}}'
-# => {"id":"A7K3QZ","url":"$BASE/A7K3QZ"}
+  -d '{
+    "config": {
+      "subtitle": "CODE CURIOUS",
+      "event_date": "2026-05-14",
+      "venue": "Granola HQ",
+      "wifi": "Granola-Guest / hello123",
+      "agenda": [
+        {"time":"18:00","label":"Doors"},
+        {"time":"18:30","label":"Lightning talks"},
+        {"time":"21:30","label":"Time to go home!"}
+      ],
+      "verbs": [
+        "Compiling thoughts...",
+        "Reticulating splines...",
+        "Grepping for meaning...",
+        "Rebasing reality..."
+      ],
+      "go_home_messages": ["Time to go home!","The pub is calling..."],
+      "urgency_start_minutes_before_end": 40,
+      "max_crabs": 5
+    },
+    "password": "correcthorse"
+  }'
+# => 201 {"id":"A7K3QZ","url":"https://.../A7K3QZ"}
 ```
 
-### Error codes
+Report back to the human: the returned `url` and the password you used.
 
-- `400` — bad JSON or validation failed (response `details` has zod issues)
-- `401` — password missing or wrong (on `GET` the server may also return 404
-  for wrong password to limit probing)
-- `404` — no config with that ID
+### 2. Update / tweak an existing config
 
-### Good defaults if the human only gave you loose details
+The human will give you the ID (6 uppercase letters/digits) and the
+password. `PUT` takes the **full** config — so read first, mutate, write:
 
-- `subtitle`: `"CODE CURIOUS"` (the Claude Code community's event tagline)
-- `verbs`: rotating "thinking-style" phrases that nod to the codebase, e.g.
+```bash
+# Read the current config
+CURRENT=$(curl -sS "$BASE/api/configs/A7K3QZ" \
+  -H "X-Config-Password: correcthorse")
+
+# Mutate it however the human asked (example: add one agenda item).
+# Then strip the server-managed fields and PUT it back under {"config": ...}.
+UPDATED=$(echo "$CURRENT" | jq '
+  del(.id, .createdAt, .updatedAt) |
+  .agenda += [{"time":"19:45","label":"Ice cream"}]
+')
+
+curl -sS -X PUT "$BASE/api/configs/A7K3QZ" \
+  -H "content-type: application/json" \
+  -H "X-Config-Password: correcthorse" \
+  -d "$(jq -n --argjson c "$UPDATED" '{config:$c}')"
+# => 200 {"id":"A7K3QZ","url":"..."}
+```
+
+Server-managed fields (`id`, `createdAt`, `updatedAt`) come back in `GET`
+but must **not** be sent in `PUT`'s `config` — strip them first.
+
+### 3. Rotate the password
+
+Add `newPassword` alongside `config` in the `PUT` body:
+
+```json
+{ "config": { ... }, "newPassword": "new-at-least-4-chars" }
+```
+
+## Error codes
+
+- `400` — bad JSON or validation failed (response `details` has zod issues;
+  read them before retrying)
+- `401` — password missing or wrong
+- `404` — no config with that ID (GET also returns 404 on wrong password)
+
+Retry on validation failures only after fixing the input. Do not loop.
+
+## Good defaults (when the human was brief)
+
+- `subtitle`: `"CODE CURIOUS"` — the Claude Code community's tagline.
+- `verbs`: rotating "thinking-style" phrases that nod to code, e.g.
   `"Compiling thoughts..."`, `"Reticulating splines..."`,
-  `"Grepping for meaning..."`, `"Rebasing reality..."`. Aim for ~10–20.
+  `"Grepping for meaning..."`, `"Rebasing reality..."`,
+  `"Aligning tokens..."`, `"Untangling spaghetti..."`. Aim for ~10–20.
 - `go_home_messages`: short, warm wind-down lines, e.g.
   `"Time to go home!"`, `"The pub is calling..."`,
   `"git commit -m 'gone home'"`.
-- `urgency_start_minutes_before_end`: `40` (ramp begins 40 min before the
+- `urgency_start_minutes_before_end`: `40` (ramp starts 40 min before the
   last agenda entry).
-- `max_crabs`: `5` (good on any screen; raise for maximal crustacean energy).
-- Make sure the **last** agenda row's `time` is the event end — the urgency
-  ramp anchors to it.
+- `max_crabs`: `5` (raise for maximal crustacean energy).
+- The **last** agenda row's `time` is the event end — the urgency ramp
+  anchors to it.
+
+## Anti-patterns — do not do these
+
+- **Do not** navigate to `/new` in a browser and fill in the form. Use
+  `POST /api/configs`.
+- **Do not** navigate to `/{id}/edit`, enter a password, and edit fields in
+  the UI. Use `GET` + `PUT /api/configs/{id}`.
+- **Do not** scrape the screensaver view at `/{id}` to read config — it's a
+  pixel-art canvas, not semantic HTML. Use `GET /api/configs/{id}`.
+- **Do not** invent an ID. IDs come from the server's `POST` response only.
+- **Do not** send partial configs to `PUT`. It replaces everything — read
+  the current config, mutate, send it back whole.
 
 ## Human-facing docs
 
-- Detailed endpoint spec: `https://github.com/claudecommunity-au/claude-event-screensaver/blob/main/docs/API.md`
+- Full endpoint spec: `https://github.com/claudecommunity-au/claude-event-screensaver/blob/main/docs/API.md`
 - Source + README: `https://github.com/claudecommunity-au/claude-event-screensaver`
 - Fork-in-spirit of the Python original: `https://github.com/maxtattonbrown/claude-code-screensaver`
