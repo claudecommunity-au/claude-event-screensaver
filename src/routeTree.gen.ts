@@ -13,8 +13,10 @@ import { Route as NewRouteImport } from './routes/new'
 import { Route as IdRouteImport } from './routes/$id'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IdIndexRouteImport } from './routes/$id.index'
+import { Route as ApiConfigsRouteImport } from './routes/api.configs'
 import { Route as IdEditRouteImport } from './routes/$id.edit'
 import { Route as IdCopyRouteImport } from './routes/$id.copy'
+import { Route as ApiConfigsIdRouteImport } from './routes/api.configs.$id'
 
 const NewRoute = NewRouteImport.update({
   id: '/new',
@@ -36,6 +38,11 @@ const IdIndexRoute = IdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => IdRoute,
 } as any)
+const ApiConfigsRoute = ApiConfigsRouteImport.update({
+  id: '/api/configs',
+  path: '/api/configs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IdEditRoute = IdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -46,6 +53,11 @@ const IdCopyRoute = IdCopyRouteImport.update({
   path: '/copy',
   getParentRoute: () => IdRoute,
 } as any)
+const ApiConfigsIdRoute = ApiConfigsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiConfigsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,14 +65,18 @@ export interface FileRoutesByFullPath {
   '/new': typeof NewRoute
   '/$id/copy': typeof IdCopyRoute
   '/$id/edit': typeof IdEditRoute
+  '/api/configs': typeof ApiConfigsRouteWithChildren
   '/$id/': typeof IdIndexRoute
+  '/api/configs/$id': typeof ApiConfigsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/new': typeof NewRoute
   '/$id/copy': typeof IdCopyRoute
   '/$id/edit': typeof IdEditRoute
+  '/api/configs': typeof ApiConfigsRouteWithChildren
   '/$id': typeof IdIndexRoute
+  '/api/configs/$id': typeof ApiConfigsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,20 +85,47 @@ export interface FileRoutesById {
   '/new': typeof NewRoute
   '/$id/copy': typeof IdCopyRoute
   '/$id/edit': typeof IdEditRoute
+  '/api/configs': typeof ApiConfigsRouteWithChildren
   '/$id/': typeof IdIndexRoute
+  '/api/configs/$id': typeof ApiConfigsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$id' | '/new' | '/$id/copy' | '/$id/edit' | '/$id/'
+  fullPaths:
+    | '/'
+    | '/$id'
+    | '/new'
+    | '/$id/copy'
+    | '/$id/edit'
+    | '/api/configs'
+    | '/$id/'
+    | '/api/configs/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/new' | '/$id/copy' | '/$id/edit' | '/$id'
-  id: '__root__' | '/' | '/$id' | '/new' | '/$id/copy' | '/$id/edit' | '/$id/'
+  to:
+    | '/'
+    | '/new'
+    | '/$id/copy'
+    | '/$id/edit'
+    | '/api/configs'
+    | '/$id'
+    | '/api/configs/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/$id'
+    | '/new'
+    | '/$id/copy'
+    | '/$id/edit'
+    | '/api/configs'
+    | '/$id/'
+    | '/api/configs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   IdRoute: typeof IdRouteWithChildren
   NewRoute: typeof NewRoute
+  ApiConfigsRoute: typeof ApiConfigsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -115,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IdIndexRouteImport
       parentRoute: typeof IdRoute
     }
+    '/api/configs': {
+      id: '/api/configs'
+      path: '/api/configs'
+      fullPath: '/api/configs'
+      preLoaderRoute: typeof ApiConfigsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$id/edit': {
       id: '/$id/edit'
       path: '/edit'
@@ -128,6 +178,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$id/copy'
       preLoaderRoute: typeof IdCopyRouteImport
       parentRoute: typeof IdRoute
+    }
+    '/api/configs/$id': {
+      id: '/api/configs/$id'
+      path: '/$id'
+      fullPath: '/api/configs/$id'
+      preLoaderRoute: typeof ApiConfigsIdRouteImport
+      parentRoute: typeof ApiConfigsRoute
     }
   }
 }
@@ -146,10 +203,23 @@ const IdRouteChildren: IdRouteChildren = {
 
 const IdRouteWithChildren = IdRoute._addFileChildren(IdRouteChildren)
 
+interface ApiConfigsRouteChildren {
+  ApiConfigsIdRoute: typeof ApiConfigsIdRoute
+}
+
+const ApiConfigsRouteChildren: ApiConfigsRouteChildren = {
+  ApiConfigsIdRoute: ApiConfigsIdRoute,
+}
+
+const ApiConfigsRouteWithChildren = ApiConfigsRoute._addFileChildren(
+  ApiConfigsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   IdRoute: IdRouteWithChildren,
   NewRoute: NewRoute,
+  ApiConfigsRoute: ApiConfigsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

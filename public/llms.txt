@@ -1,0 +1,110 @@
+# Claude Event Screensaver
+
+> A hosted web screensaver for Claude Code community events. One URL per
+> event — a pixelated "CLAUDE" title with rotating thinking-verbs, an event
+> agenda with an urgency ramp toward the end, venue/wifi details, and
+> scuttling Clawd crab mascots. Configs are stored server-side (Cloudflare
+> KV), keyed by a 6-character ID, and protected by a per-config admin
+> password.
+
+**Base URL:** `https://claude-event-screensaver.claudecommunityau.workers.dev`
+
+## How to set up a new screensaver (for agents)
+
+The happy path is a single `POST /api/configs` call. You'll get back an `id`
+and a public view URL (`https://.../{id}`) that anyone can open to run the
+screensaver. Keep the password you chose — you need it to `PUT` updates or
+`GET` the structured config back later.
+
+1. Build a Config JSON object (shape below).
+2. `POST /api/configs` with `{ config, password }`.
+3. Share the returned `url` with the event runner.
+
+### Config JSON shape
+
+```jsonc
+{
+  "subtitle": "CODE CURIOUS",          // text under CLAUDE
+  "event_date": "2026-05-14",          // YYYY-MM-DD, or ""
+  "venue": "Granola HQ",
+  "wifi": "Granola-Guest / hello123",
+  "agenda": [                          // ordered, HH:MM times, 24h
+    { "time": "18:00", "label": "Doors" },
+    { "time": "18:30", "label": "Lightning talks" },
+    { "time": "21:30", "label": "Time to go home!" }
+  ],
+  "verbs": [                           // rotating "thinking..." lines
+    "Compiling thoughts...",
+    "Reticulating splines..."
+  ],
+  "go_home_messages": [                // shown during final urgency phase
+    "Time to go home!"
+  ],
+  "urgency_start_minutes_before_end": 40,  // 0-240
+  "max_crabs": 5                           // 0-50 scuttling Clawds
+}
+```
+
+All fields are required (except `max_crabs`, which defaults to 5). Unknown
+fields are rejected. `event_date` may be an empty string if the event isn't
+dated.
+
+### Authenticated endpoints
+
+Writes and structured reads require the password — send it as either
+`X-Config-Password: <password>` or `Authorization: Bearer <password>`.
+
+| verb   | path                  | purpose                         | password |
+| ------ | --------------------- | ------------------------------- | -------- |
+| POST   | `/api/configs`        | create (returns `id` + `url`)   | no       |
+| GET    | `/api/configs/{id}`   | read full config                | yes      |
+| PUT    | `/api/configs/{id}`   | replace config, optionally rotate password | yes |
+
+`GET /{id}` (no `/api/` prefix) renders the screensaver in a browser — no
+password needed.
+
+### Typical agent flow
+
+```bash
+curl -X POST "$BASE/api/configs" \
+  -H "content-type: application/json" \
+  -d '{"config":{...},"password":"correcthorse"}'
+# => {"id":"A7K3QZ","url":"$BASE/A7K3QZ"}
+
+curl "$BASE/api/configs/A7K3QZ" -H "X-Config-Password: correcthorse"
+# => full stored config
+
+curl -X PUT "$BASE/api/configs/A7K3QZ" \
+  -H "content-type: application/json" \
+  -H "X-Config-Password: correcthorse" \
+  -d '{"config":{...updated...}}'
+# => {"id":"A7K3QZ","url":"$BASE/A7K3QZ"}
+```
+
+### Error codes
+
+- `400` — bad JSON or validation failed (response `details` has zod issues)
+- `401` — password missing or wrong (on `GET` the server may also return 404
+  for wrong password to limit probing)
+- `404` — no config with that ID
+
+### Good defaults if the human only gave you loose details
+
+- `subtitle`: `"CODE CURIOUS"` (the Claude Code community's event tagline)
+- `verbs`: rotating "thinking-style" phrases that nod to the codebase, e.g.
+  `"Compiling thoughts..."`, `"Reticulating splines..."`,
+  `"Grepping for meaning..."`, `"Rebasing reality..."`. Aim for ~10–20.
+- `go_home_messages`: short, warm wind-down lines, e.g.
+  `"Time to go home!"`, `"The pub is calling..."`,
+  `"git commit -m 'gone home'"`.
+- `urgency_start_minutes_before_end`: `40` (ramp begins 40 min before the
+  last agenda entry).
+- `max_crabs`: `5` (good on any screen; raise for maximal crustacean energy).
+- Make sure the **last** agenda row's `time` is the event end — the urgency
+  ramp anchors to it.
+
+## Human-facing docs
+
+- Detailed endpoint spec: `https://github.com/claudecommunity-au/claude-event-screensaver/blob/main/docs/API.md`
+- Source + README: `https://github.com/claudecommunity-au/claude-event-screensaver`
+- Fork-in-spirit of the Python original: `https://github.com/maxtattonbrown/claude-code-screensaver`

@@ -90,3 +90,48 @@ export const verifyConfigPassword = createServerFn({ method: 'POST' })
     const ok = await verifyPassword(data.password, stored.password)
     return { ok }
   })
+
+export const getConfigWithPassword = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ id: z.string(), password: z.string() }))
+  .handler(async ({ data }): Promise<{ ok: false } | { ok: true; config: PublicConfig }> => {
+    const stored = await readStored(data.id)
+    if (!stored) return { ok: false }
+    const ok = await verifyPassword(data.password, stored.password)
+    if (!ok) return { ok: false }
+    return { ok: true, config: publicView(stored) }
+  })
+
+export const updateConfigDetailed = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({
+      id: z.string(),
+      password: z.string(),
+      config: configInputSchema,
+      newPassword: z.string().optional(),
+    }),
+  )
+  .handler(
+    async ({
+      data,
+    }): Promise<
+      { ok: false; reason: 'not_found' | 'invalid_password' } | { ok: true; id: string }
+    > => {
+      const stored = await readStored(data.id)
+      if (!stored) return { ok: false, reason: 'not_found' }
+      const passOk = await verifyPassword(data.password, stored.password)
+      if (!passOk) return { ok: false, reason: 'invalid_password' }
+      const pwBlock =
+        data.newPassword && data.newPassword.length > 0
+          ? await hashPassword(data.newPassword)
+          : stored.password
+      const next: StoredConfig = {
+        ...data.config,
+        id: stored.id,
+        password: pwBlock,
+        createdAt: stored.createdAt,
+        updatedAt: new Date().toISOString(),
+      }
+      await kv().put(KEY(stored.id), JSON.stringify(next))
+      return { ok: true, id: stored.id }
+    },
+  )
