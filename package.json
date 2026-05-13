@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy",
+    "deploy:ambassador": "vite build && wrangler deploy --env ambassador",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

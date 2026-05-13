@@ -13,5 +13,23 @@
       "id": "0dee25c4f027496e8b035200da143e5a",
       "preview_id": "0dee25c4f027496e8b035200da143e5a"
     }
-  ]
+  ],
+  "env": {
+    "ambassador": {
+      "account_id": "a12823016aa16d0a8dd2678b258bd751",
+      "routes": [
+        {
+          "pattern": "screen.claudeambassadortools.com",
+          "custom_domain": true
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "CONFIGS_KV",
+          "id": "0dee25c4f027496e8b035200da143e5a",
+          "preview_id": "0dee25c4f027496e8b035200da143e5a"
+        }
+      ]
+    }
+  }
 }
