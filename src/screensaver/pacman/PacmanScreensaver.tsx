@@ -77,6 +77,15 @@ export function PacmanScreensaver({ config }: { config: PublicConfig }) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    // Clawd mascot icon (same art as the classic screensaver), drawn for the
+    // agent instead of a generic Pac-Man wedge.
+    const clawdImg = new Image()
+    let clawdReady = false
+    clawdImg.onload = () => {
+      clawdReady = true
+    }
+    clawdImg.src = '/clawd.svg'
+
     // --- mutable game state -------------------------------------------------
     // token grid: 0 empty, 1 token, 2 power
     const grid = new Uint8Array(MAZE_COLS * MAZE_ROWS)
@@ -410,23 +419,32 @@ export function PacmanScreensaver({ config }: { config: PublicConfig }) {
       const { tile, mazeX, mazeY } = layout
       const cx = mazeX + (agent.x + 0.5) * tile
       const cy = mazeY + (agent.y + 0.5) * tile
-      // during a "context lost" death, the agent winds its mouth shut and fades
+      // during a "context lost" death, Clawd shrinks and fades away
       const dieT = dying > 0 ? 1 - dying / DEATH_FRAMES : 0
-      const radius = tile * 0.46 * (1 - dieT)
-      const ang = Math.atan2(facing.r, facing.c)
-      const open = dying > 0 ? dieT * Math.PI : (0.5 + 0.5 * Math.sin(frame * 0.4)) * 0.9 + 0.05
+      const scale = 1 - dieT
+      // a gentle bob so the icon feels alive while it scuttles the maze
+      const bob = Math.sin(frame * 0.3) * tile * 0.04
+      // fit the 66x52 icon inside the tile, preserving its aspect ratio
+      const w = tile * 1.05 * scale
+      const h = w * (52 / 66)
       ctx.save()
-      ctx.translate(cx, cy)
-      ctx.rotate(ang)
-      ctx.fillStyle = COL_AGENT
+      ctx.translate(cx, cy + bob)
+      // face the travel direction with a horizontal flip (icon is symmetric,
+      // but this keeps the eyes leading the way)
+      if (facing.c > 0) ctx.scale(-1, 1)
+      ctx.globalAlpha = scale
       ctx.shadowColor = COL_AGENT
       ctx.shadowBlur = tile * 0.4
-      ctx.beginPath()
-      ctx.moveTo(0, 0)
-      ctx.arc(0, 0, radius, open, Math.PI * 2 - open)
-      ctx.closePath()
-      ctx.fill()
-      ctx.shadowBlur = 0
+      if (clawdReady) {
+        ctx.drawImage(clawdImg, -w / 2, -h / 2, w, h)
+      } else {
+        // fallback wedge until the icon loads
+        ctx.fillStyle = COL_AGENT
+        ctx.beginPath()
+        ctx.arc(0, 0, tile * 0.46 * scale, 0.25, Math.PI * 2 - 0.25)
+        ctx.lineTo(0, 0)
+        ctx.fill()
+      }
       ctx.restore()
     }
 
@@ -575,12 +593,18 @@ export function PacmanScreensaver({ config }: { config: PublicConfig }) {
         return
       }
       if (kind === 'agent') {
-        ctx.fillStyle = color
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        ctx.arc(x, y, s * 0.55, 0.32, Math.PI * 2 - 0.32)
-        ctx.closePath()
-        ctx.fill()
+        if (clawdReady) {
+          const w = s * 1.3
+          const h = w * (52 / 66)
+          ctx.drawImage(clawdImg, x - w / 2, y - h / 2, w, h)
+        } else {
+          ctx.fillStyle = color
+          ctx.beginPath()
+          ctx.moveTo(x, y)
+          ctx.arc(x, y, s * 0.55, 0.32, Math.PI * 2 - 0.32)
+          ctx.closePath()
+          ctx.fill()
+        }
         return
       }
       // ghost dome
