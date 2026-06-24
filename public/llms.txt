@@ -9,6 +9,8 @@
 
 **Base URL:** `https://claude-event-screensaver.claudecommunityau.workers.dev`
 
+**Source:** `https://github.com/claudecommunity-au/claude-event-screensaver`
+
 ## FOR AGENTS: use the JSON API, not the web UI
 
 > **Do NOT open a browser, fill in form fields, or click buttons.** The

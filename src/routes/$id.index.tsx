@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
-import { Maximize2, Minimize2 } from 'lucide-react'
+import { Maximize2, Minimize2, Github } from 'lucide-react'
 import { Screensaver } from '@/screensaver/Screensaver'
 import { getConfig } from '@/server/kv'
 import { Button } from '@/components/ui/button'
@@ -63,6 +63,16 @@ function ScreensaverPage() {
         >
           <FullscreenIcon />
         </button>
+        <a
+          href="https://github.com/claudecommunity-au/claude-event-screensaver"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pointer-events-auto hover:text-white/80"
+          aria-label="Source on GitHub"
+          title="Source on GitHub"
+        >
+          <Github className="h-4 w-4" />
+        </a>
       </div>
     </div>
   )

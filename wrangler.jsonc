@@ -4,6 +4,7 @@
   "compatibility_date": "2026-04-16",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  "account_id": "b90fc48710b01ed523ae94ca67d6788e",
   "observability": { "enabled": true },
   // Run `wrangler kv namespace create CONFIGS_KV` and paste the returned id below.
   // Also run `wrangler kv namespace create CONFIGS_KV --preview` for local/preview.

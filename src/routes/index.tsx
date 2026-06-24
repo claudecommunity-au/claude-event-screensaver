@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -54,6 +55,18 @@ function Landing() {
           </a>{' '}
           — it has the REST API to create or update screensavers.
         </p>
+        <div className="flex justify-center">
+          <a
+            href="https://github.com/claudecommunity-au/claude-event-screensaver"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
+            aria-label="Source on GitHub"
+          >
+            <Github className="h-4 w-4" />
+            <span>Source on GitHub</span>
+          </a>
+        </div>
       </div>
     </div>
   )
