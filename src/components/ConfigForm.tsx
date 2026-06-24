@@ -5,7 +5,14 @@ import { Trash2, Plus, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { configInputSchema, type ConfigInput } from '@/lib/schema'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { configInputSchema, VERB_PRESETS, type ConfigInput } from '@/lib/schema'
 import { DatePicker } from './DatePicker'
 import { TimePicker } from './TimePicker'
 
@@ -77,6 +84,8 @@ export function ConfigForm({
     formState: { errors },
   } = form
 
+  const mode = form.watch('mode')
+
   const agenda = useFieldArray({ control, name: 'agenda' })
   const verbs = useFieldArray({ control, name: 'verbs' as never })
   const goHome = useFieldArray({ control, name: 'go_home_messages' as never })
@@ -98,9 +107,29 @@ export function ConfigForm({
           {submitting ? 'Saving...' : submitLabel}
         </Button>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="subtitle">Subtitle</Label>
-        <Input id="subtitle" {...register('subtitle')} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="subtitle">Subtitle</Label>
+          <Input id="subtitle" {...register('subtitle')} />
+        </div>
+        <div className="space-y-2">
+          <Label>Screensaver style</Label>
+          <Controller
+            control={control}
+            name="mode"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="classic">Classic — floating Clawds</SelectItem>
+                  <SelectItem value="pacman">Pac-Man — token muncher</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,16 +166,29 @@ export function ConfigForm({
             {...register('urgency_start_minutes_before_end', { valueAsNumber: true })}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="max_crabs">Max Clawds scuttling around</Label>
-          <Input
-            id="max_crabs"
-            type="number"
-            min={0}
-            max={50}
-            {...register('max_crabs', { valueAsNumber: true })}
-          />
-        </div>
+        {mode === 'pacman' ? (
+          <div className="space-y-2">
+            <Label htmlFor="pacman_ghosts">Hazard ghosts chasing Claude</Label>
+            <Input
+              id="pacman_ghosts"
+              type="number"
+              min={0}
+              max={4}
+              {...register('pacman_ghosts', { valueAsNumber: true })}
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label htmlFor="max_crabs">Max Clawds scuttling around</Label>
+            <Input
+              id="max_crabs"
+              type="number"
+              min={0}
+              max={50}
+              {...register('max_crabs', { valueAsNumber: true })}
+            />
+          </div>
+        )}
       </div>
 
       <section className="space-y-3">
@@ -200,9 +242,26 @@ export function ConfigForm({
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">Thinking words</h2>
-          <Button type="button" variant="outline" size="sm" onClick={() => verbs.prepend('' as never)}>
-            <Plus className="h-4 w-4" /> Add
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select onValueChange={(id) => {
+              const preset = VERB_PRESETS.find((p) => p.id === id)
+              if (preset) verbs.replace([...preset.verbs] as never)
+            }}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="Load preset…" />
+              </SelectTrigger>
+              <SelectContent>
+                {VERB_PRESETS.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button type="button" variant="outline" size="sm" onClick={() => verbs.prepend('' as never)}>
+              <Plus className="h-4 w-4" /> Add
+            </Button>
+          </div>
         </div>
         <div className="space-y-2">
           {verbs.fields.map((field, idx) => (

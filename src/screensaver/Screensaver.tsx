@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { PublicConfig } from '@/lib/schema'
+import { PacmanScreensaver } from './pacman/PacmanScreensaver'
 import {
   TITLE_LINES,
   WARM,
@@ -51,6 +52,11 @@ function getUrgency(u: Urgency | null): number {
 }
 
 export function Screensaver({ config }: { config: PublicConfig }) {
+  if (config.mode === 'pacman') return <PacmanScreensaver config={config} />
+  return <ClassicScreensaver config={config} />
+}
+
+function ClassicScreensaver({ config }: { config: PublicConfig }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {

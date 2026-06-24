@@ -29,6 +29,8 @@ function CopyPage() {
         go_home_messages: config.go_home_messages,
         urgency_start_minutes_before_end: config.urgency_start_minutes_before_end,
         max_crabs: config.max_crabs,
+        mode: config.mode,
+        pacman_ghosts: config.pacman_ghosts,
       }
     : defaultConfigInput()
 

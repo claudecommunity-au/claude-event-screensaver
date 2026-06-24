@@ -18,6 +18,11 @@ export const configInputSchema = z.object({
   go_home_messages: z.array(z.string().min(1)),
   urgency_start_minutes_before_end: z.number().int().min(0).max(240),
   max_crabs: z.number().int().min(0).max(50).default(5),
+  // Which screensaver to render: the original meeting-room "classic" mode,
+  // or the Pac-Man-style "pacman" token-muncher maze.
+  mode: z.enum(['classic', 'pacman']).default('classic'),
+  // Number of ghosts (AI hazards) chasing the agent in pacman mode.
+  pacman_ghosts: z.number().int().min(0).max(4).default(4),
 })
 
 export type ConfigInput = z.infer<typeof configInputSchema>
@@ -65,6 +70,32 @@ export const DEFAULT_VERBS = [
   'Refactoring the universe...',
 ]
 
+export const AUSTRALIAN_VERBS = [
+  'Desalinating the Salties...',
+  'Standing in line at the Opera House...',
+  'Crossing the Tasman Sea of code...',
+  'Listening to the voices at the billabong...',
+  'Juggling the Emus...',
+  'Wrangling the Koalas...',
+  'Herding the Kangaroos...',
+  'Thinking deeply...',
+  'Connecting neurons...',
+  'Synthesising signals...',
+  'Mapping trade patterns...',
+  'Reticulating splines...',
+  'Amplifying humans...',
+  'Calibrating instincts...',
+  'Compiling curiosity...',
+  'Expanding horizons...',
+  'Grepping for meaning...',
+  'Building guardrails...',
+]
+
+export const VERB_PRESETS: { id: string; label: string; verbs: string[] }[] = [
+  { id: 'regular', label: 'Regular', verbs: DEFAULT_VERBS },
+  { id: 'australian', label: 'Australian', verbs: AUSTRALIAN_VERBS },
+]
+
 export const DEFAULT_GO_HOME_MESSAGES = [
   'Time to go home!',
   'Your sofa misses you',
@@ -89,4 +120,6 @@ export const defaultConfigInput = (): ConfigInput => ({
   go_home_messages: [...DEFAULT_GO_HOME_MESSAGES],
   urgency_start_minutes_before_end: 40,
   max_crabs: 5,
+  mode: 'classic',
+  pacman_ghosts: 4,
 })
